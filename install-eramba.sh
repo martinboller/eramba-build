@@ -36,12 +36,10 @@ install_prerequisites() {
     # Install some basic tools on a Debian net install
     /usr/bin/logger '..Install some basic tools on a Debian net install' -t 'erambaCE-20211104';
     #apt-get -y install --fix-policy;
-    apt-get -y install adduser wget whois build-essential devscripts git unzip apt-transport-https ca-certificates curl gnupg2 software-properties-common dnsutils dirmngr --install-recommends;
+    apt-get -y install adduser wget whois unzip apt-transport-https ca-certificates curl gnupg2 software-properties-common dnsutils dirmngr --install-recommends;
     # Set correct locale
     locale-gen;
     update-locale;
-    # Install for Eramba
-    apt-get -y install php-curl php-ldap php-mbstring php-gd php-exif php-intl php-xml php-zip;
     # Install other preferences and clean up APT
     /usr/bin/logger '....Install some preferences on Debian and clean up APT' -t 'erambaCE-20211104';
     apt-get -y install bash-completion;
@@ -67,20 +65,8 @@ install_apache() {
 
 install_php() {
     /usr/bin/logger 'install_php()' -t 'erambaCE-20211104';
-    apt-get -y install php php-mysql php libapache2-mod-php php-cli;
-    # Required modules
-    # PHP Common
-    # PHP GD
-    # PHP Intl
-    # PHP Mbstring
-    # PHP LDAP
-    # PHP Curl
-    # PHP MySQL
-    # PHP XML
-    # PHP Zip
-    # PHP BZ2
-    # PHP SimpleXML
-    # PHP SQLite3
+    apt-get -y install php php-mysql libapache2-mod-php php-cli php-curl php-ldap php-mbstring php-gd php-exif php-intl php-xml php-zip \
+        php-bz2 php-sqlite3 php-common;
     /usr/bin/logger 'install_php() finished' -t 'erambaCE-20211104';
 }
 
@@ -98,48 +84,10 @@ configure_mariadb() {
 
 install_pdf_tools() {
     /usr/bin/logger 'install_pdf_tools()' -t 'erambaCE-20211104';
-    cd /tmp/
-    wget https://downloads.wkhtmltopdf.org/0.12/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-    apt-get install ./wkhtmltox_0.12.5-1.xenial_amd64.deb
+    cd /tmp/;
+    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb -O ./wkhtmltox.deb
+    apt-get -y install ./wkhtmltox.deb -f;
     /usr/bin/logger 'install_pdf_tools() finished' -t 'erambaCE-20211104';
-}
-
-prepare_nix() {
-    /usr/bin/logger 'prepare_nix()' -t 'erambaCE-20211104';
-    echo -e "\e[1;32mCreating Users, configuring sudoers, and setting locale\e[0m";
-    # set desired locale
-    localectl set-locale en_US.UTF-8;
-    # Create gvm user
-    /usr/sbin/useradd --system --create-home --home-dir /opt/gvm/ -c "gvm User" --shell /bin/bash gvm;
-    mkdir /opt/gvm;
-    chown gvm:gvm /opt/gvm;
-    # Update the PATH environment variable
-    echo "PATH=\$PATH:/opt/gvm/bin:/opt/gvm/sbin" > /etc/profile.d/gvm.sh;
-    # Add GVM library path to /etc/ld.so.conf.d
-
-    sh -c 'cat << EOF > /etc/ld.so.conf.d/greenbone.conf;
-# Greenbone libraries
-/opt/gvm/lib
-/opt/gvm/include
-EOF'
-
-# sudoers.d to run openvas as root
-    sh -c 'cat << EOF > /etc/sudoers.d/greenbone
-gvm     ALL = NOPASSWD: /opt/gvm/sbin/gsad, /opt/gvm/sbin/gvmd, /opt/gvm/sbin/openvas
-
-Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/gvm/sbin"
-EOF'
-    # It appears that GVMD sometimes delete /run/gvm so added a subfolder (/gse) to prevent this
-    sh -c 'cat << EOF > /etc/tmpfiles.d/greenbone.conf
-d /run/gvm 1775 gvm gvm
-d /run/gvm/gse 1775 root root
-d /run/ospd 1775 gvm gvm
-d /run/ospd/gse 1775 root root
-EOF'
-    # start systemd-tmpfiles to create directories
-    systemd-tmpfiles --create;
-    /usr/bin/logger 'prepare_nix() finished' -t 'erambaCE-20211104';
-
 }
 
 install_eramba() {    
@@ -150,9 +98,54 @@ install_eramba() {
     cd /tmp/eramba;
     wget https://downloadseramba.s3-eu-west-1.amazonaws.com/CommunityTGZ/latest.tgz
     sync;
-    tar -xzf latest.tgz -C /var/www/;
+    tar -xzf latest.tgz -C /var/www/html/;
     sync;
     /usr/bin/logger 'install_eramba finished' -t 'erambaCE-20211104';
+}
+
+generate_certificates() {
+    /usr/bin/logger 'generate_certificates()' -t 'erambaCE-20211104';
+    mkdir -p /etc/apache2/certs/;
+
+    # organization name
+    # (see also https://www.switch.ch/pki/participants/)
+    export ORGNAME=eramba-community
+    # the fully qualified server (or service) name, change if other servicename than hostname
+    export FQDN=$HOSTNAME;
+
+    # subjectAltName entries: to add DNS aliases to the CSR, delete
+    # the '#' character in the ALTNAMES line, and change the subsequent
+    # 'DNS:' entries accordingly. Please note: all DNS names must
+    # resolve to the same IP address as the FQDN.
+    export ALTNAMES=DNS:$HOSTNAME   # , DNS:bar.example.org , DNS:www.foo.example.org
+
+    cat << __EOF__ > ./openssl.cnf
+## Request for $FQDN
+[ req ]
+default_bits = 2048
+default_md = sha256
+prompt = no
+encrypt_key = no
+distinguished_name = dn
+#req_extensions = req_ext
+
+[ dn ]
+countryName         = DK
+stateOrProvinceName = Denmark
+localityName        = Aabenraa
+organizationName    = $ORGNAME
+CN = $FQDN
+
+#[ req_ext ]
+#subjectAltName = $ALTNAMES
+__EOF__
+    sync;
+    # generate Certificate Signing Request to send to corp PKI
+    openssl req -new -config openssl.cnf -keyout /etc/apache2/certs/$HOSTNAME.key -out /etc/apache2/certs/$HOSTNAME.csr
+    # generate self-signed certificate (remove when CSR can be sent to Corp PKI)
+    openssl x509 -in /etc/apache2/certs/$HOSTNAME.csr -out /etc/apache2/certs/$HOSTNAME.crt -req -signkey /etc/apache2/certs/$HOSTNAME.key -days 365
+    chmod 600 /etc/apache2/certs/$HOSTNAME.key
+    /usr/bin/logger 'generate_certificates() finished' -t 'erambaCE-20211104';
 }
 
 prepare_mariadb() {
@@ -199,7 +192,6 @@ class DATABASE_CONFIG {
 	);
 }
 EOF"
-
     /usr/bin/logger 'prepare_mariadb() finished' -t 'erambaCE-20211104';
 }
 
@@ -213,6 +205,11 @@ start_services() {
     # Start GSE units
     systemctl restart mariadb;
     systemctl restart apache2;
+    /usr/bin/logger 'start_services finished' -t 'erambaCE-20211104';
+}
+
+check_services() {
+    /usr/bin/logger 'check_services' -t 'erambaCE-20211104';
     # Check status of critical services
     # Apache
     echo -e "\e[1;32m-----------------------------------------------------------------\e[0m";
@@ -234,83 +231,24 @@ start_services() {
             echo -e "\e[1;31mmariadb.service FAILED!\e[0m";
             /usr/bin/logger "mariadb.service FAILED!" -t 'erambaCE-20211104';
     fi
-    /usr/bin/logger 'start_services finished' -t 'erambaCE-20211104';
+    /usr/bin/logger 'check_services finished' -t 'erambaCE-20211104';
 }
 
 configure_mariadb() {
     /usr/bin/logger 'configure_mariadb' -t 'erambaCE-20211104';
-#     sh -c 'cat << EOF > /etc/tmpfiles.d/redis.conf
-# d /run/redis 0755 redis redis
-# EOF'
-#     # start systemd-tmpfiles to create directories
-#     systemd-tmpfiles --create;
-#     sh -c 'cat << EOF  > /etc/redis/redis.conf
-# daemonize yes
-# pidfile /run/redis/redis-server.pid
-# port 0
-# tcp-backlog 511
-# unixsocket /run/redis/redis.sock
-# unixsocketperm 766
-# timeout 0
-# tcp-keepalive 0
-# loglevel notice
-# syslog-enabled yes
-# databases 4097
-# stop-writes-on-bgsave-error yes
-# rdbcompression yes
-# rdbchecksum yes
-# dbfilename dump.rdb
-# dir /var/lib/redis
-# slave-serve-stale-data yes
-# slave-read-only yes
-# repl-disable-tcp-nodelay no
-# slave-priority 100
-# maxclients 20000
-# appendonly no
-# appendfilename "appendonly.aof"
-# appendfsync everysec
-# no-appendfsync-on-rewrite no
-# auto-aof-rewrite-percentage 100
-# auto-aof-rewrite-min-size 64mb
-# lua-time-limit 5000
-# slowlog-log-slower-than 10000
-# slowlog-max-len 128
-# latency-monitor-threshold 0
-# notify-keyspace-events ""
-# hash-max-ziplist-entries 512
-# hash-max-ziplist-value 64
-# list-max-ziplist-entries 512
-# list-max-ziplist-value 64
-# set-max-intset-entries 512
-# zset-max-ziplist-entries 128
-# zset-max-ziplist-value 64
-# hll-sparse-max-bytes 3000
-# activerehashing yes
-# client-output-buffer-limit normal 0 0 0
-# client-output-buffer-limit slave 256mb 64mb 60
-# client-output-buffer-limit pubsub 32mb 8mb 60
-# hz 10
-# aof-rewrite-incremental-fsync yes
-# EOF'
-#     # Redis requirements - overcommit memory and TCP backlog setting > 511
-#     sysctl -w vm.overcommit_memory=1;
-#     sysctl -w net.core.somaxconn=1024;
-#     echo "vm.overcommit_memory=1" >> /etc/sysctl.d/60-gse-redis.conf;
-#     echo "net.core.somaxconn=1024" >> /etc/sysctl.d/60-gse-redis.conf;
-#     # Disable THP
-#     echo never > /sys/kernel/mm/transparent_hugepage/enabled;
-#     sh -c 'cat << EOF  > /etc/default/grub.d/99-transparent-huge-page.cfg
-# # Turns off Transparent Huge Page functionality as required by redis
-# GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT transparent_hugepage=never"
-# EOF'
-#     update-grub;
-    sync;
+     sh -c 'cat << EOF >> /etc/mysql/my.cnf 
+[mysqld]
+sql_mode="NO_ENGINE_SUBSTITUTION"
+max_allowed_packet="128000000"
+innodb_lock_wait_timeout="200"
+EOF'
     /usr/bin/logger 'configure_mariadb finished' -t 'erambaCE-20211104';
 }
 
 configure_php() {
     /usr/bin/logger 'configure_php()' -t 'erambaCE-20211104';
-    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 500M/" /etc/php/7.4/apache2/php.ini
+    # Apache
+    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/apache2/php.ini
     sed -i -e "s/memory_limit = [0-9]\{1,\}M/memory_limit = 2048M/" /etc/php/7.4/apache2/php.ini
     sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/apache2/php.ini
     sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/apache2/php.ini
@@ -318,6 +256,15 @@ configure_php() {
     sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/apache2/php.ini
     sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/apache2/php.ini
     sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/apache2/php.ini
+    # CLI must be same values
+    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/memory_limit = -[0-9]\{1,\}/memory_limit = 2048M/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/cli/php.ini
     # Based on these "minimum" values from Eramba    
     # Setting, Required Value
     # memory_limit, 2048M
@@ -333,48 +280,82 @@ configure_php() {
 
 configure_apache() {
     /usr/bin/logger 'configure_apache()' -t 'erambaCE-20211104';
-    a2enmod rewrite;
-    sh -c 'cat << EOF > /etc/apache2/sites-available/eramba.conf;
-<VirtualHost *:80>
-#	ServerName hostname.yourdomain.org
-#	ServerAdmin webmaster@yourdomain.org
-	DocumentRoot /var/www/html/eramba_community/
-	ErrorLog \${APACHE_LOG_DIR}/eramba.org.error.log
-	CustomLog \${APACHE_LOG_DIR}/eramba.org.access.log combined
+    a2enmod rewrite ssl;
+    # plain http
+#     sh -c "cat << EOF > /etc/apache2/sites-available/eramba.conf;
+# <VirtualHost *:80>
+# 	ServerName $HOSTNAME.$DOMAINNAME
+# #	ServerAdmin webmaster@yourdomain.org
+# 	DocumentRoot /var/www/html/eramba_community/
+# 	ErrorLog \${APACHE_LOG_DIR}/eramba.org.error.log
+# 	CustomLog \${APACHE_LOG_DIR}/eramba.org.access.log combined
+
+#         <Directory /var/www/html/eramba_community/>
+#                 Options +Indexes
+#                 AllowOverride All
+#                 Options FollowSymLinks 
+# 		Options -MultiViews
+#                 allow from all
+#         </Directory>
+# </VirtualHost>
+# EOF"
+
+    # TLS
+    sh -c "cat << EOF > /etc/apache2/sites-available/eramba.conf;
+    <VirtualHost *:80>
+    ServerName $HOSTNAME
+    #ServerAdmin 
+    DocumentRoot /var/www/html/eramba_community/
+            Redirect  /  https://$HOSTNAME
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName $HOSTNAME
+    DocumentRoot /var/www/html/eramba_community/
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+               SSLEngine on
+               SSLCertificateFile "/etc/apache2/certs/$HOSTNAME.crt"
+               SSLCertificateKeyFile "/etc/apache2/certs/$HOSTNAME.key"
+               #SSLCertificateChainFile /path/to/rootca.crt
 
         <Directory /var/www/html/eramba_community/>
                 Options +Indexes
                 AllowOverride All
                 Options FollowSymLinks 
-		Options -MultiViews
-                allow from all
+        Options -MultiViews
+        allow from all
+        deny from all
         </Directory>
 </VirtualHost>
-EOF'
-    #configure Eramba site
+EOF"
+    # Enable Eramba site
+    #Remove default apache/debian site
     rm /etc/apache2/sites-enabled/*.conf;
+    # Link Eramba site == enable site
     ln /etc/apache2/sites-available/eramba.conf /etc/apache2/sites-enabled/;
     /usr/bin/logger 'configure_apache() finished' -t 'erambaCE-20211104';
 }
 
 configure_eramba() {
     /usr/bin/logger 'configure_eramba()' -t 'erambaCE-20211104';
+    # Eramba CRON - needs to run before Eramba health is ok - see run_cron()
+     sh -c 'cat << EOF >> /etc/crontab;
+# Eramba Maintenance Cron Jobs
+@hourly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
+@daily su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
+@yearly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
+EOF'
+    sync;
+    export SHORTNAME=$(hostname -s)
+    sed -ie "s/\https:\/\/$SHORTNAME/https:\/\/$HOSTNAME/" /var/www/html/eramba_community/app/tmp/cache/settings/settings_settings_list;
     /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-20211104';
 }
 
 configure_permissions() {
     /usr/bin/logger 'configure_permissions()' -t 'erambaCE-20211104';
-    /usr/bin/logger '..Setting correct ownership of files for user gvm' -t 'erambaCE-20211104';
-    # Once more to ensure that GVM owns all files in /opt/gvm
-    chown -R gvm:gvm /opt/gvm/;
-    # GSE log files
-    chown -R gvm:gvm /var/log/gvm/;
-    # Openvas feed
-    chown -R gvm:gvm /var/lib/openvas;
-    # GVM Feed
-    chown -R gvm:gvm /var/lib/gvm;
-    # OSPD Configuration file
-    chown -R gvm:gvm /etc/ospd/;
+    chown -R www-data:www-data /var/www/html/;
     /usr/bin/logger 'configure_permissions() finished' -t 'erambaCE-20211104';
 }
 
@@ -384,19 +365,28 @@ show_databases() {
     /usr/bin/logger ''Databases $(mysql -e "show databases;")'' -t 'erambaCE-20211104';
 }
 
+run_cron() {
+    /usr/bin/logger 'run_cron()' -t 'erambaCE-20211104';
+    # Prerun these cron jobs in order to get all greens in Eramba health
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
+    /usr/bin/logger 'run_cron() finished' -t 'erambaCE-20211104';
+}
+
 ##################################################################################################################
 ## Main                                                                                                          #
 ##################################################################################################################
 
 main() {
-    # install
+    # install all required elements and generate certificates for webserver
     install_prerequisites;
+    generate_certificates;
     install_pdf_tools;
     install_apache;
     install_mariadb;
     install_php;
     install_eramba;
-   
     # Configure components
     prepare_mariadb;
     configure_mariadb;
@@ -405,7 +395,10 @@ main() {
     configure_eramba;
     #configure_permissions;
     start_services;
+    configure_permissions;
+    run_cron;
     show_databases;
+    check_services;
     /usr/bin/logger 'Installation complete' -t 'erambaCE-20211104';
     echo -e;
     echo -e "\e[1;32mInstallation complete\e[0m";
@@ -418,4 +411,11 @@ exit 0;
 ######################################################################################################################################
 # Post install 
 # 
-# 
+# /var/www/html/eramba_community/app/Console/cake cron test
+# /var/www/html/eramba_community/app/Console/cake system_health check   
+#
+# the hourly, daily, and monthly cron job
+# su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
+# su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
+# su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
+#
