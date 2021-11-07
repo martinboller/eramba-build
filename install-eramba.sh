@@ -348,8 +348,6 @@ configure_eramba() {
 @yearly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
 EOF'
     sync;
-    export SHORTNAME=$(hostname -s)
-    sed -ie "s/\https:\/\/$SHORTNAME/https:\/\/$HOSTNAME/" /var/www/html/eramba_community/app/tmp/cache/settings/settings_settings_list;
     /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-20211104';
 }
 
@@ -411,6 +409,7 @@ exit 0;
 ######################################################################################################################################
 # Post install 
 # 
+# Under settings -> crontab change hostname to FQDN in the Eramba web console
 # /var/www/html/eramba_community/app/Console/cake cron test
 # /var/www/html/eramba_community/app/Console/cake system_health check   
 #
