@@ -341,13 +341,33 @@ EOF"
 configure_eramba() {
     /usr/bin/logger 'configure_eramba()' -t 'erambaCE-20211104';
     # Eramba CRON - needs to run before Eramba health is ok - see run_cron()
-     sh -c 'cat << EOF >> /etc/crontab;
+     sh -c 'cat << EOF >> /var/spool/cron/crontabs/root
 # Eramba Maintenance Cron Jobs
 @hourly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
 @daily su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
 @yearly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
 EOF'
     sync;
+    BUILDDATE=$(date +%Y-%m-%d)
+    sh -c cat << __EOF__ >> /etc/motd
+           
+*******************************************
+***                                     ***
+***            Eramba                   ***
+***    ------------------------         ***          
+***      Automated Install              ***
+***      Community Edition              ***
+***     Build date $BUILDDATE           ***
+***                                     ***
+********************||*********************
+             (\__/) ||
+             (•ㅅ•) ||
+            /  　  づ
+     Automated install v1.5
+            2021-11-08
+            bsecure.dk
+
+__EOF__
     /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-20211104';
 }
 
