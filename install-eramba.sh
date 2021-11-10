@@ -368,6 +368,7 @@ EOF'
             bsecure.dk
 
 __EOF__
+    sed -ie 's/session    optional     pam_motd.so  motd=\/etc\/motd/#session    optional     pam_motd.so  motd=\/etc\/motd/' /etc/pam.d/sshd
     /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-20211104';
 }
 
