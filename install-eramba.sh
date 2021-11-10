@@ -392,6 +392,18 @@ run_cron() {
     /usr/bin/logger 'run_cron() finished' -t 'erambaCE-20211104';
 }
 
+create_htpasswd() {
+    /usr/bin/logger 'create_htpasswd() finished' -t 'eramba';
+    export ht_passwd="$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)"
+    mkdir -p /mnt/backup/;
+    htpasswd -cb /etc/nginx/.htpasswd eramba $HT_PASSWD;
+    echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
+    echo "Created password for Apache $HOSTNAME     eramba:$ht_passwd"  >> /mnt/backup/readme-users.txt;
+    echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
+    /usr/bin/logger 'create_htpasswd() finished' -t 'eramba';
+    systemctl restart nginx.service;
+}
+
 ##################################################################################################################
 ## Main                                                                                                          #
 ##################################################################################################################
@@ -411,6 +423,7 @@ main() {
     configure_php;
     configure_apache;
     configure_eramba;
+    create_htpasswd;
     #configure_permissions;
     start_services;
     configure_permissions;
