@@ -127,7 +127,7 @@ default_md = sha256
 prompt = no
 encrypt_key = no
 distinguished_name = dn
-#req_extensions = req_ext
+req_extensions = req_ext
 
 [ dn ]
 countryName         = DK
@@ -136,8 +136,8 @@ localityName        = Aabenraa
 organizationName    = $ORGNAME
 CN = $FQDN
 
-#[ req_ext ]
-#subjectAltName = $ALTNAMES
+[ req_ext ]
+subjectAltName = $ALTNAMES
 __EOF__
     sync;
     # generate Certificate Signing Request to send to corp PKI
@@ -340,14 +340,42 @@ EOF"
 
 configure_eramba() {
     /usr/bin/logger 'configure_eramba()' -t 'erambaCE-20211104';
+    # Change "Upgrade to Enterprise notification" to EE
+    #sed -i -e "s/Upgrade to enterprise version/EE/" /var/www/html/eramba_community/app/View/Layouts/default.ctp;
     # Eramba CRON - needs to run before Eramba health is ok - see run_cron()
-     sh -c 'cat << EOF >> /var/spool/cron/crontabs/root
+    sh -c cat << __EOF__ >> /var/spool/cron/crontabs/root
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+
 # Eramba Maintenance Cron Jobs
 @hourly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
 @daily su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
 @yearly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
-EOF'
+__EOF__
     sync;
+    chmod 600 /var/spool/cron/crontabs/root;
+    # Configure MOTD
     BUILDDATE=$(date +%Y-%m-%d)
     sh -c cat << __EOF__ >> /etc/motd
            
@@ -368,6 +396,7 @@ EOF'
             bsecure.dk
 
 __EOF__
+    # do not show motd twice
     sed -ie 's/session    optional     pam_motd.so  motd=\/etc\/motd/#session    optional     pam_motd.so  motd=\/etc\/motd/' /etc/pam.d/sshd
     /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-20211104';
 }
