@@ -5,10 +5,11 @@
 # Author:       Martin Boller                                               #
 #                                                                           #
 # Email:        martin                                                      #
-# Last Update:  2021-11-04                                                  #
-# Version:      1.00                                                        #
+# Last Update:  2021-11-10                                                  #
+# Version:      1.50                                                        #
 #                                                                           #
 # Changes:      Initial Version (1.00)                                      #
+#               Some cron stuff (1.50)                                      #
 #                                                                           #
 # Info:                                                                     #
 #                                                                           #
@@ -36,7 +37,7 @@ install_prerequisites() {
     # Install some basic tools on a Debian net install
     /usr/bin/logger '..Install some basic tools on a Debian net install' -t 'erambaCE-20211104';
     #apt-get -y install --fix-policy;
-    apt-get -y install adduser wget whois unzip apt-transport-https ca-certificates curl gnupg2 software-properties-common dnsutils dirmngr --install-recommends;
+    apt-get -y install adduser wget whois unzip apt-transport-https ca-certificates curl gnupg2 software-properties-common dnsutils dirmngr --install-recommends useradd;
     # Set correct locale
     locale-gen;
     update-locale;
@@ -342,6 +343,7 @@ configure_eramba() {
     /usr/bin/logger 'configure_eramba()' -t 'erambaCE-20211104';
     # Change "Upgrade to Enterprise notification" to EE
     #sed -i -e "s/Upgrade to enterprise version/EE/" /var/www/html/eramba_community/app/View/Layouts/default.ctp;
+    /usr/sbin/useradd --system --create-home -c "Eramba User" --shell /bin/bash eramba;
     # Eramba CRON - needs to run before Eramba health is ok - see run_cron()
     sh -c cat << __EOF__ >> /var/spool/cron/crontabs/root
 # Edit this file to introduce tasks to be run by cron.
@@ -375,6 +377,7 @@ configure_eramba() {
 __EOF__
     sync;
     chmod 600 /var/spool/cron/crontabs/root;
+    chown root:root /var/spool/cron/crontabs/root;
     # Configure MOTD
     BUILDDATE=$(date +%Y-%m-%d)
     sh -c cat << __EOF__ >> /etc/motd
@@ -384,7 +387,7 @@ __EOF__
 ***            Eramba                   ***
 ***    ------------------------         ***          
 ***      Automated Install              ***
-***      Community Edition              ***
+***   Eramba Community Edition          ***
 ***     Build date $BUILDDATE           ***
 ***                                     ***
 ********************||*********************
@@ -417,21 +420,21 @@ run_cron() {
     /usr/bin/logger 'run_cron()' -t 'erambaCE-20211104';
     # Prerun these cron jobs in order to get all greens in Eramba health
     su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
-    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
     su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
+    # Daily will not run successfully until after first login as Admin/Admin and password changed
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
     /usr/bin/logger 'run_cron() finished' -t 'erambaCE-20211104';
 }
 
 create_htpasswd() {
-    /usr/bin/logger 'create_htpasswd() finished' -t 'eramba';
-    export ht_passwd="$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)"
+    /usr/bin/logger 'create_htpasswd()' -t 'eramba';
+    export HT_PASSWD="$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)"
     mkdir -p /mnt/backup/;
-    htpasswd -cb /etc/nginx/.htpasswd eramba $HT_PASSWD;
+    htpasswd -cb /etc/apache2/.htpasswd eramba $HT_PASSWD;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
     echo "Created password for Apache $HOSTNAME     eramba:$ht_passwd"  >> /mnt/backup/readme-users.txt;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
     /usr/bin/logger 'create_htpasswd() finished' -t 'eramba';
-    systemctl restart nginx.service;
 }
 
 ##################################################################################################################
