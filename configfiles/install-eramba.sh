@@ -22,7 +22,7 @@
 
 
 install_prerequisites() {
-    /usr/bin/logger 'install_prerequisites' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_prerequisites' -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32m--------------------------------------------\e[0m";
     echo -e "\e[1;32mInstalling Prerequisite packages\e[0m";
     export DEBIAN_FRONTEND=noninteractive;
@@ -31,83 +31,83 @@ install_prerequisites() {
     . /etc/os-release
     OS=$NAME
     VER=$VERSION_ID
-    /usr/bin/logger "Operating System: $OS Version: $VER" -t 'erambaCE-2021-11-11';
+    /usr/bin/logger "Operating System: $OS Version: $VER" -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32mOperating System: $OS Version: $VER\e[0m";
   # Install prerequisites
-    apt-get update;
+    apt-get update 2>&1 1>/dev/null;
     # Install some basic tools on a Debian net install
-    /usr/bin/logger '..Install some basic tools on a Debian net install' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger '..Install some basic tools on a Debian net install' -t 'erambaCE-2021-11-12';
     #apt-get -y install --fix-policy;
     apt-get -y install adduser wget whois unzip apt-transport-https ca-certificates curl gnupg2 software-properties-common dnsutils \
-        iptables dirmngr --install-recommends;
+        iptables dirmngr --install-recommends 2>&1 1>/dev/null;
     # Set correct locale
-    locale-gen;
-    update-locale;
+    locale-gen 2>&1 1>/dev/null;
+    update-locale 2>&1 1>/dev/null;
     # Install other preferences and clean up APT
-    /usr/bin/logger '....Install some preferences on Debian and clean up APT' -t 'erambaCE-2021-11-11';
-    apt-get -y install bash-completion;
+    /usr/bin/logger '....Install some preferences on Debian and clean up APT' -t 'erambaCE-2021-11-12';
+    apt-get -y install bash-completion 2>&1 1>/dev/null;
     # Install SUDO
-    apt-get -y install sudo;
+    apt-get -y install sudo 2>&1 1>/dev/null;
     # A little apt 
-    apt-get -y install --fix-missing;
-    apt-get update;
-    apt-get -y full-upgrade;
-    apt-get -y autoremove --purge;
-    apt-get -y autoclean;
-    apt-get -y clean;
+    apt-get -y install --fix-missing 2>&1 1>/dev/null;
+    apt-get update 2>&1 1>/dev/null;
+    apt-get -y full-upgrade 2>&1 1>/dev/null;
+    apt-get -y autoremove --purge 2>&1 1>/dev/null;
+    apt-get -y autoclean 2>&1 1>/dev/null;
+    apt-get -y clean 2>&1 1>/dev/null;
     # Python pip packages
-    python3 -m pip install --upgrade pip
-    /usr/bin/logger 'install_prerequisites finished' -t 'erambaCE-2021-11-11';
+    python3 -m pip install --upgrade pip 2>&1 1>/dev/null;
+    /usr/bin/logger 'install_prerequisites finished' -t 'erambaCE-2021-11-12';
 }
 
 install_apache() {
-    /usr/bin/logger 'install_apache()' -t 'erambaCE-2021-11-11';
-    apt-get -y install apache2 apache2-utils;
-    /usr/bin/logger 'install_apache() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_apache()' -t 'erambaCE-2021-11-12';
+    apt-get -y install apache2 apache2-utils 2>&1 1>/dev/null;
+    /usr/bin/logger 'install_apache() finished' -t 'erambaCE-2021-11-12';
 }
 
 install_php() {
-    /usr/bin/logger 'install_php()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_php()' -t 'erambaCE-2021-11-12';
     apt-get -y install php php-mysql libapache2-mod-php php-cli php-curl php-ldap php-mbstring php-gd php-exif php-intl php-xml php-zip \
-        php-bz2 php-sqlite3 php-common;
-    /usr/bin/logger 'install_php() finished' -t 'erambaCE-2021-11-11';
+        php-bz2 php-sqlite3 php-common 2>&1 1>/dev/null;
+    /usr/bin/logger 'install_php() finished' -t 'erambaCE-2021-11-12';
 }
 
 install_mariadb() {
-    /usr/bin/logger 'install_mariadb()' -t 'erambaCE-2021-11-11';
-    apt-get -y install mariadb-server;
-    /usr/bin/logger 'install_mariadb() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_mariadb()' -t 'erambaCE-2021-11-12';
+    apt-get -y install mariadb-server 2>&1 1>/dev/null;
+    /usr/bin/logger 'install_mariadb() finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_mariadb() {
-    /usr/bin/logger 'configure_mariadb()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_mariadb()' -t 'erambaCE-2021-11-12';
     mysql_secure_installation;
-    /usr/bin/logger 'configure_mariadb() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_mariadb() finished' -t 'erambaCE-2021-11-12';
 }
 
 install_pdf_tools() {
-    /usr/bin/logger 'install_pdf_tools()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_pdf_tools()' -t 'erambaCE-2021-11-12';
     cd /tmp/;
-    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb -O ./wkhtmltox.deb
-    apt-get -y install ./wkhtmltox.deb -f;
-    /usr/bin/logger 'install_pdf_tools() finished' -t 'erambaCE-2021-11-11';
+    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb -O ./wkhtmltox.deb 2>&1 1>/dev/null;
+    apt-get -y install ./wkhtmltox.deb -f  2>&1 1>/dev/null;
+    /usr/bin/logger 'install_pdf_tools() finished' -t 'erambaCE-2021-11-12';
 }
 
 install_eramba() {    
-    /usr/bin/logger 'install_eramba()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_eramba()' -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32mPreparing Eramba Source files\e[0m";
     mkdir -p /var/www/html/;
     mkdir -p /tmp/eramba/;
     cd /tmp/eramba;
-    wget https://downloadseramba.s3-eu-west-1.amazonaws.com/CommunityTGZ/latest.tgz
+    wget https://downloadseramba.s3-eu-west-1.amazonaws.com/CommunityTGZ/latest.tgz 2>&1 1>/dev/null;
     sync;
     tar -xzf latest.tgz -C /var/www/html/;
     sync;
-    /usr/bin/logger 'install_eramba finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'install_eramba finished' -t 'erambaCE-2021-11-12';
 }
 
 generate_certificates() {
-    /usr/bin/logger 'generate_certificates()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'generate_certificates()' -t 'erambaCE-2021-11-12';
     mkdir -p /etc/apache2/certs/;
 
     # organization name
@@ -151,7 +151,7 @@ __EOF__
     # generate self-signed certificate (remove when CSR can be sent to Corp PKI)
     openssl x509 -in /etc/apache2/certs/$HOSTNAME.csr -out /etc/apache2/certs/$HOSTNAME.crt -req -signkey /etc/apache2/certs/$HOSTNAME.key -days 365
     chmod 600 /etc/apache2/certs/$HOSTNAME.key
-    /usr/bin/logger 'generate_certificates() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'generate_certificates() finished' -t 'erambaCE-2021-11-12';
 }
 
 prepare_nix() {
@@ -159,18 +159,9 @@ prepare_nix() {
     echo -e "\e[1;32mCreating Users, configuring sudoers, and setting locale\e[0m";
     # set desired locale
     localectl set-locale en_US.UTF-8;
-    # Create gvm user
-    # Create eramba user <- initially considering using this for running cron   
-    #/usr/sbin/useradd --system --create-home -c "Eramba User" --shell /bin/bash eramba;
-    # Update the PATH environment variable
-
-# sudoers.d to allow Eramba to run cake as root
-#    sh -c 'cat << EOF > /etc/sudoers.d/eramba
-#eramba     ALL = NOPASSWD: /var/www/html/eramba_community/app/Console/cake
-#EOF'
     # Configure MOTD
     BUILDDATE=$(date +%Y-%m-%d)
-    sh -c cat << __EOF__ >> /etc/motd
+    cat << __EOF__ >> /etc/motd
            
 *******************************************
 ***                                     ***
@@ -186,17 +177,16 @@ prepare_nix() {
             /  　  づ
      Automated install v1.5
             2021-11-08
-            bsecure.dk
 
 __EOF__
     # do not show motd twice
     sed -ie 's/session    optional     pam_motd.so  motd=\/etc\/motd/#session    optional     pam_motd.so  motd=\/etc\/motd/' /etc/pam.d/sshd
     sync;
-    /usr/bin/logger 'prepare_nix() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'prepare_nix() finished' -t 'erambaCE-2021-11-12';
 }
 
 prepare_mariadb() {
-    /usr/bin/logger 'prepare_mariadb()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'prepare_mariadb()' -t 'erambaCE-2021-11-12';
     # If /root/.my.cnf exists then it won't ask for root password
     export dbusername=eramba;
     #read -s -p "Enter Password for MariaDB user $dbusername: " userpass
@@ -208,22 +198,22 @@ prepare_mariadb() {
     echo -e "\e[1;32mCreating Database $dbname\e[0m"
     mysql -e "CREATE DATABASE ${dbname} /*\!40100 DEFAULT CHARACTER SET ${charset} */;"
     echo -e "\e[1;32mDatabase successfully created\e[0m"
-    /usr/bin/logger "Database $dbname successfully created" -t 'erambaCE-2021-11-11';
+    /usr/bin/logger "Database $dbname successfully created" -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32mCreating user $dbusername .....\e[0m"
     mysql -e "CREATE USER ${dbusername}@localhost IDENTIFIED BY '${userpass}';"
     echo -e "\e[1;32mUser $dbusername successfully created\e[0m"
-    /usr/bin/logger "User $dbusername successfully created" -t 'erambaCE-2021-11-11';
+    /usr/bin/logger "User $dbusername successfully created" -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32mGranting ALL privileges on ${dbname} to ${dbusername}"
     mysql -e "GRANT ALL PRIVILEGES ON ${dbname}.* TO '${dbusername}'@'localhost';"
     mysql -e "FLUSH PRIVILEGES;"
     echo -e "\e[1;32mPrivileges successfully created for User: $dbusername on Database: $dbname\e[0m"
-    /usr/bin/logger "Privileges granted to user $dbusername on database $dbname" -t 'erambaCE-2021-11-11';
+    /usr/bin/logger "Privileges granted to user $dbusername on database $dbname" -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32mCreating Eramba database schema on ${dbname}";
     for file in /var/www/html/eramba_community/app/Config/db_schema/*.sql; do cat "$file"; done | mysql eramba_data
-    /usr/bin/logger "Schema created on database $dbname" -t 'erambaCE-2021-11-11';
+    /usr/bin/logger "Schema created on database $dbname" -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32m-----------------------------------------------------------------\e[0m";
     export default='$default'
-    sh -c "cat << EOF > /var/www/html/eramba_community/app/Config/database.php;
+    cat << __EOF__ > /var/www/html/eramba_community/app/Config/database.php;
 <?php
 class DATABASE_CONFIG {
 
@@ -238,25 +228,25 @@ class DATABASE_CONFIG {
 		'encoding' => 'utf8',
 	);
 }
-EOF"
-    /usr/bin/logger 'prepare_mariadb() finished' -t 'erambaCE-2021-11-11';
+__EOF__
+    /usr/bin/logger 'prepare_mariadb() finished' -t 'erambaCE-2021-11-12';
 }
 
 start_services() {
-    /usr/bin/logger 'start_services' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'start_services' -t 'erambaCE-2021-11-12';
     # Load new/changed systemd-unitfiles
-    systemctl daemon-reload;
+    systemctl daemon-reload 2>&1 1>/dev/null;
     # Enable services
-    systemctl enable apache2;
-    systemctl enable mariadb;
+    systemctl enable apache2 2>&1 1>/dev/null;
+    systemctl enable mariadb 2>&1 1>/dev/null;
     # Start GSE units
-    systemctl restart mariadb;
-    systemctl restart apache2;
-    /usr/bin/logger 'start_services finished' -t 'erambaCE-2021-11-11';
+    systemctl restart mariadb 2>&1 1>/dev/null;
+    systemctl restart apache2 2>&1 1>/dev/null;
+    /usr/bin/logger 'start_services finished' -t 'erambaCE-2021-11-12';
 }
 
 check_services() {
-    /usr/bin/logger 'check_services' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'check_services' -t 'erambaCE-2021-11-12';
     # Check status of critical services
     # Apache
     echo -e "\e[1;32m-----------------------------------------------------------------\e[0m";
@@ -264,54 +254,54 @@ check_services() {
     if systemctl is-active --quiet apache2.service;
         then
             echo -e "\e[1;32mapache webserver started successfully";
-            /usr/bin/logger 'apache webserver started successfully' -t 'erambaCE-2021-11-11';
+            /usr/bin/logger 'apache webserver started successfully' -t 'erambaCE-2021-11-12';
         else
             echo -e "\e[1;31mapache webserver FAILED!\e[0m";
-            /usr/bin/logger 'apache webserver FAILED' -t 'erambaCE-2021-11-11';
+            /usr/bin/logger 'apache webserver FAILED' -t 'erambaCE-2021-11-12';
     fi
     # mariadb.service
     if systemctl is-active --quiet mariadb.service;
         then
             echo -e "\e[1;32mmariadb.service started successfully";
-            /usr/bin/logger 'mariadb.service started successfully' -t 'erambaCE-2021-11-11';
+            /usr/bin/logger 'mariadb.service started successfully' -t 'erambaCE-2021-11-12';
         else
             echo -e "\e[1;31mmariadb.service FAILED!\e[0m";
-            /usr/bin/logger "mariadb.service FAILED!" -t 'erambaCE-2021-11-11';
+            /usr/bin/logger "mariadb.service FAILED!" -t 'erambaCE-2021-11-12';
     fi
-    /usr/bin/logger 'check_services finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'check_services finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_mariadb() {
-    /usr/bin/logger 'configure_mariadb' -t 'erambaCE-2021-11-11';
-     sh -c 'cat << EOF >> /etc/mysql/my.cnf 
+    /usr/bin/logger 'configure_mariadb' -t 'erambaCE-2021-11-12';
+    cat << __EOF__ >> /etc/mysql/my.cnf 
 [mysqld]
 sql_mode="NO_ENGINE_SUBSTITUTION"
 max_allowed_packet="128000000"
 innodb_lock_wait_timeout="200"
-EOF'
-    /usr/bin/logger 'configure_mariadb finished' -t 'erambaCE-2021-11-11';
+__EOF__
+    /usr/bin/logger 'configure_mariadb finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_php() {
-    /usr/bin/logger 'configure_php()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_php()' -t 'erambaCE-2021-11-12';
     # Apache
-    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/memory_limit = [0-9]\{1,\}M/memory_limit = 2048M/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/apache2/php.ini
-    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/memory_limit = [0-9]\{1,\}M/memory_limit = 2048M/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
     # CLI must be same values
-    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/memory_limit = -[0-9]\{1,\}/memory_limit = 2048M/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/cli/php.ini
-    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/memory_limit = -[0-9]\{1,\}/memory_limit = 2048M/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
     # Based on these "minimum" values from Eramba    
     # Setting, Required Value
     # memory_limit, 2048M
@@ -322,15 +312,15 @@ configure_php() {
     # allow_url_fopen, On
     # max_input_vars, 3000
     # max_input_time, 600
-    /usr/bin/logger 'configure_php() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_php() finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_apache() {
-    /usr/bin/logger 'configure_apache()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_apache()' -t 'erambaCE-2021-11-12';
     # Change ROOTCA to point to correct cert when/if not using self signed cert.
     export ROOTCA=$HOSTNAME
     # Enable Apache modules required
-    a2enmod rewrite ssl headers;
+    a2enmod rewrite ssl headers 2>&1 1>/dev/null;
     # TLS
     cat << __EOF__ > /etc/apache2/sites-available/eramba.conf;
     <VirtualHost *:80>
@@ -388,37 +378,37 @@ __EOF__
     rm /etc/apache2/sites-enabled/*.conf;
     # Link Eramba site == enable site
     ln /etc/apache2/sites-available/eramba.conf /etc/apache2/sites-enabled/;
-    /usr/bin/logger 'configure_apache() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_apache() finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_eramba() {
-    /usr/bin/logger 'configure_eramba()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_eramba()' -t 'erambaCE-2021-11-12';
     # Change "Upgrade to Enterprise notification" to EE
     #sed -i -e "s/Upgrade to enterprise version/EE/" /var/www/html/eramba_community/app/View/Layouts/default.ctp;
     # Eramba CRON - needs to run before Eramba health is ok - see run_cron()
-    sh -c cat << __EOF__ >> /var/spool/cron/crontabs/root
+    cat << __EOF__ >> /var/spool/cron/crontabs/root
 # Eramba Maintenance Cron Jobs
 @hourly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
 @daily su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
 @yearly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
 __EOF__
     sync;
-    chmod 600 /var/spool/cron/crontabs/root;
-    chown root:root /var/spool/cron/crontabs/root;
-    /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-2021-11-11';
+    chmod 600 /var/spool/cron/crontabs/root 2>&1 1>/dev/null;
+    chown root:root /var/spool/cron/crontabs/root 2>&1 1>/dev/null;
+    /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_permissions() {
-    /usr/bin/logger 'configure_permissions()' -t 'erambaCE-2021-11-11';
-    chown -R www-data:www-data /var/www/html/;
-    /usr/bin/logger 'configure_permissions() finished' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'configure_permissions()' -t 'erambaCE-2021-11-12';
+    chown -R www-data:www-data /var/www/html/ 2>&1 1>/dev/null;
+    /usr/bin/logger 'configure_permissions() finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_iptables() {
     /usr/bin/logger 'configure_iptables() started' -t 'bSIEM Step2';
     echo -e "\e[32mconfigure_iptables()\e[0m";
     echo -e "\e[32m-Creating iptables rules file\e[0m";
-    sh -c "cat << EOF  >> /etc/network/iptables.rules
+    cat << __EOF__  >> /etc/network/iptables.rules
 ##
 ## Ruleset for Eramba Server
 ##
@@ -481,18 +471,18 @@ configure_iptables() {
 
 ## Commit everything
 COMMIT
-EOF";
+__EOF__
 
     # Configure separate file for iptables logging
-    sh -c 'cat << EOF  >> /etc/rsyslog.d/30-iptables-syslog.conf
+    cat << __EOF__  >> /etc/rsyslog.d/30-iptables-syslog.conf
 :msg,contains,"iptables:" /var/log/iptables.log
 & stop
-EOF';
-    sync;
-    systemctl restart rsyslog.service;
+__EOF__
+    sync 2>&1 1>/dev/null;
+    systemctl restart rsyslog.service 2>&1 1>/dev/null;
 
     # Configure daily logrotation (forward this log to log mgmt)
-    sh -c 'cat << EOF  >> /etc/logrotate.d/iptables
+    cat << __EOF__  >> /etc/logrotate.d/iptables
 /var/log/iptables.log {
   rotate 2
   daily
@@ -503,43 +493,52 @@ EOF';
     /usr/lib/rsyslog/rsyslog-rotate
   endscript
 }
-EOF'
+__EOF__
 
 # Apply iptables at boot
-   echo -e "\e[36m-Script applying iptables rules\e[0m";
-    sudo sh -c "cat << EOF  >> /etc/network/if-up.d/firewallrules
+    echo -e "\e[36m-Script applying iptables rules\e[0m";
+    cat << __EOF__  >> /etc/network/if-up.d/firewallrules
 #! /bin/bash
 iptables-restore < /etc/network/iptables.rules
 exit 0
-EOF";
-    sync;
+__EOF__
+    sync 2>&1 1>/dev/null;
     ## make the script executable
-    chmod +x /etc/network/if-up.d/firewallrules;
+    chmod +x /etc/network/if-up.d/firewallrules 2>&1 1>/dev/null;
+    # Apply firewall rules
     #/etc/network/if-up.d/firewallrules;
     /usr/bin/logger 'configure_iptables() done' -t 'Firewall setup';
 }
 
 show_databases() {
+    echo -e "\e[1;32m------------------------------\e[0m"
     echo -e "\e[1;32mShowing databases.....\e[0m"
     mysql -e "show databases;"
-    /usr/bin/logger ''Databases $(mysql -e "show databases;")'' -t 'erambaCE-2021-11-11';
+    echo -e "\e[1;32m------------------------------\e[0m"
+    /usr/bin/logger ''Databases $(mysql -e "show databases;")'' -t 'erambaCE-2021-11-12';
 }
 
 run_cron() {
-    /usr/bin/logger 'run_cron()' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'run_cron()' -t 'erambaCE-2021-11-12';
     # Prerun these cron jobs in order to get all greens in Eramba health
-    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
-    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data 2>&1 1>/dev/null
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data 2>&1 1>/dev/null
     # Daily will not run successfully until after first login as Admin/Admin and password changed
     #su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
-    /usr/bin/logger 'run_cron() finished' -t 'erambaCE-2021-11-11';
+    echo -e "\e[1;32m--------------------------------------------------------------------------------------\e[0m"
+    echo -e "\e[1;31m!! Daily will not run successfully until after first login as admin/admin and password changed !!\e[0m"
+    echo -e "\e[1;31m!! Run the following command after you have logged in the first time\e[0m"
+    echo -e 'su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data'
+    echo -e "\e[1;31m!! Daily will not run successfully until after first login as admin/admin, see above !!\e[0m"
+    echo -e "\e[1;32m--------------------------------------------------------------------------------------\e[0m"
+    /usr/bin/logger 'run_cron() finished' -t 'erambaCE-2021-11-12';
 }
 
 create_htpasswd() {
     /usr/bin/logger 'create_htpasswd()' -t 'eramba';
     export HT_PASSWD="$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)"
-    mkdir -p /mnt/backup/;
-    htpasswd -cb /etc/apache2/.htpasswd eramba $HT_PASSWD;
+    mkdir -p /mnt/backup/ 2>&1 1>/dev/null;
+    htpasswd -cb /etc/apache2/.htpasswd eramba $HT_PASSWD 2>&1 1>/dev/null;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
     echo "Created password for Apache $HOSTNAME     eramba:$ht_passwd"  >> /mnt/backup/readme-users.txt;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
@@ -551,7 +550,8 @@ create_htpasswd() {
 ##################################################################################################################
 
 main() {
-    # install all required elements and generate certificates for webserver
+    /usr/bin/logger 'Installing Eramba.......' -t 'eramba';
+     # install all required elements and generate certificates for webserver
     install_prerequisites;
     prepare_nix;
     generate_certificates;
@@ -574,7 +574,7 @@ main() {
     run_cron;
     show_databases;
     check_services;
-    /usr/bin/logger 'Installation complete' -t 'erambaCE-2021-11-11';
+    /usr/bin/logger 'Eramba Installation complete' -t 'erambaCE-2021-11-12';
     echo -e;
     echo -e "\e[1;32mInstallation complete\e[0m";
 }
