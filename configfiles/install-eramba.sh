@@ -165,7 +165,7 @@ prepare_nix() {
            
 *******************************************
 ***                                     ***
-***            Eramba                   ***
+***    $HOSTNAME                        ***
 ***    ------------------------         ***          
 ***      Automated Install              ***
 ***   Eramba Community Edition          ***
