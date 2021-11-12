@@ -175,8 +175,8 @@ prepare_nix() {
              (\__/) ||
              (•ㅅ•) ||
             /  　  づ
-     Automated install v1.5
-            2021-11-08
+     Automated install v2.0
+            2021-11-12
 
 __EOF__
     # do not show motd twice
