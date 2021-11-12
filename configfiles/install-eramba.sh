@@ -34,48 +34,48 @@ install_prerequisites() {
     /usr/bin/logger "Operating System: $OS Version: $VER" -t 'erambaCE-2021-11-12';
     echo -e "\e[1;32mOperating System: $OS Version: $VER\e[0m";
   # Install prerequisites
-    apt-get update 2>&1 1>/dev/null;
+    apt-get update;
     # Install some basic tools on a Debian net install
     /usr/bin/logger '..Install some basic tools on a Debian net install' -t 'erambaCE-2021-11-12';
     #apt-get -y install --fix-policy;
     apt-get -y install adduser wget whois unzip apt-transport-https ca-certificates curl gnupg2 software-properties-common dnsutils \
-        iptables dirmngr --install-recommends 2>&1 1>/dev/null;
+        iptables dirmngr --install-recommends;
     # Set correct locale
-    locale-gen 2>&1 1>/dev/null;
-    update-locale 2>&1 1>/dev/null;
+    locale-gen;
+    update-locale;
     # Install other preferences and clean up APT
     /usr/bin/logger '....Install some preferences on Debian and clean up APT' -t 'erambaCE-2021-11-12';
-    apt-get -y install bash-completion 2>&1 1>/dev/null;
+    apt-get -y install bash-completion;
     # Install SUDO
-    apt-get -y install sudo 2>&1 1>/dev/null;
+    apt-get -y install sudo;
     # A little apt 
-    apt-get -y install --fix-missing 2>&1 1>/dev/null;
-    apt-get update 2>&1 1>/dev/null;
-    apt-get -y full-upgrade 2>&1 1>/dev/null;
-    apt-get -y autoremove --purge 2>&1 1>/dev/null;
-    apt-get -y autoclean 2>&1 1>/dev/null;
-    apt-get -y clean 2>&1 1>/dev/null;
+    apt-get -y install --fix-missing;
+    apt-get update;
+    apt-get -y full-upgrade;
+    apt-get -y autoremove --purge;
+    apt-get -y autoclean;
+    apt-get -y clean;
     # Python pip packages
-    python3 -m pip install --upgrade pip 2>&1 1>/dev/null;
+    python3 -m pip install --upgrade pip;
     /usr/bin/logger 'install_prerequisites finished' -t 'erambaCE-2021-11-12';
 }
 
 install_apache() {
     /usr/bin/logger 'install_apache()' -t 'erambaCE-2021-11-12';
-    apt-get -y install apache2 apache2-utils 2>&1 1>/dev/null;
+    apt-get -y install apache2 apache2-utils;
     /usr/bin/logger 'install_apache() finished' -t 'erambaCE-2021-11-12';
 }
 
 install_php() {
     /usr/bin/logger 'install_php()' -t 'erambaCE-2021-11-12';
     apt-get -y install php php-mysql libapache2-mod-php php-cli php-curl php-ldap php-mbstring php-gd php-exif php-intl php-xml php-zip \
-        php-bz2 php-sqlite3 php-common 2>&1 1>/dev/null;
+        php-bz2 php-sqlite3 php-common;
     /usr/bin/logger 'install_php() finished' -t 'erambaCE-2021-11-12';
 }
 
 install_mariadb() {
     /usr/bin/logger 'install_mariadb()' -t 'erambaCE-2021-11-12';
-    apt-get -y install mariadb-server 2>&1 1>/dev/null;
+    apt-get -y install mariadb-server;
     /usr/bin/logger 'install_mariadb() finished' -t 'erambaCE-2021-11-12';
 }
 
@@ -88,8 +88,8 @@ configure_mariadb() {
 install_pdf_tools() {
     /usr/bin/logger 'install_pdf_tools()' -t 'erambaCE-2021-11-12';
     cd /tmp/;
-    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb -O ./wkhtmltox.deb 2>&1 1>/dev/null;
-    apt-get -y install ./wkhtmltox.deb -f  2>&1 1>/dev/null;
+    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb -O ./wkhtmltox.deb;
+    apt-get -y install ./wkhtmltox.deb -f ;
     /usr/bin/logger 'install_pdf_tools() finished' -t 'erambaCE-2021-11-12';
 }
 
@@ -99,7 +99,7 @@ install_eramba() {
     mkdir -p /var/www/html/;
     mkdir -p /tmp/eramba/;
     cd /tmp/eramba;
-    wget https://downloadseramba.s3-eu-west-1.amazonaws.com/CommunityTGZ/latest.tgz 2>&1 1>/dev/null;
+    wget https://downloadseramba.s3-eu-west-1.amazonaws.com/CommunityTGZ/latest.tgz;
     sync;
     tar -xzf latest.tgz -C /var/www/html/;
     sync;
@@ -235,13 +235,13 @@ __EOF__
 start_services() {
     /usr/bin/logger 'start_services' -t 'erambaCE-2021-11-12';
     # Load new/changed systemd-unitfiles
-    systemctl daemon-reload 2>&1 1>/dev/null;
+    systemctl daemon-reload;
     # Enable services
-    systemctl enable apache2 2>&1 1>/dev/null;
-    systemctl enable mariadb 2>&1 1>/dev/null;
+    systemctl enable apache2;
+    systemctl enable mariadb;
     # Start GSE units
-    systemctl restart mariadb 2>&1 1>/dev/null;
-    systemctl restart apache2 2>&1 1>/dev/null;
+    systemctl restart mariadb;
+    systemctl restart apache2;
     /usr/bin/logger 'start_services finished' -t 'erambaCE-2021-11-12';
 }
 
@@ -285,23 +285,23 @@ __EOF__
 configure_php() {
     /usr/bin/logger 'configure_php()' -t 'erambaCE-2021-11-12';
     # Apache
-    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/memory_limit = [0-9]\{1,\}M/memory_limit = 2048M/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/apache2/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/memory_limit = [0-9]\{1,\}M/memory_limit = 2048M/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/apache2/php.ini
+    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/apache2/php.ini
     # CLI must be same values
-    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/memory_limit = -[0-9]\{1,\}/memory_limit = 2048M/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
-    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/cli/php.ini 2>&1 1>/dev/null
+    sed -i -e "s/upload_max_filesize = [0-9]\{1,\}M/upload_max_filesize = 50M/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/memory_limit = -[0-9]\{1,\}/memory_limit = 2048M/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/post_max_size = [0-9]\{1,\}M/post_max_size = 500M/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/file_uploads = Off/post_max_size = On/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/max_execution_time = [0-9]\{1,\}/max_execution_time = 500/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/allow_url_fopen = Off/allow_url_fopen = On/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/;max_input_vars = [0-9]\{1,\}/max_input_vars = 5000/" /etc/php/7.4/cli/php.ini
+    sed -i -e "s/max_input_time = [0-9]\{1,\}/max_input_time = 600/" /etc/php/7.4/cli/php.ini
     # Based on these "minimum" values from Eramba    
     # Setting, Required Value
     # memory_limit, 2048M
@@ -320,7 +320,7 @@ configure_apache() {
     # Change ROOTCA to point to correct cert when/if not using self signed cert.
     export ROOTCA=$HOSTNAME
     # Enable Apache modules required
-    a2enmod rewrite ssl headers 2>&1 1>/dev/null;
+    a2enmod rewrite ssl headers;
     # TLS
     cat << __EOF__ > /etc/apache2/sites-available/eramba.conf;
     <VirtualHost *:80>
@@ -393,14 +393,14 @@ configure_eramba() {
 @yearly su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
 __EOF__
     sync;
-    chmod 600 /var/spool/cron/crontabs/root 2>&1 1>/dev/null;
-    chown root:root /var/spool/cron/crontabs/root 2>&1 1>/dev/null;
+    chmod 600 /var/spool/cron/crontabs/root;
+    chown root:root /var/spool/cron/crontabs/root;
     /usr/bin/logger 'configure_eramba() finished' -t 'erambaCE-2021-11-12';
 }
 
 configure_permissions() {
     /usr/bin/logger 'configure_permissions()' -t 'erambaCE-2021-11-12';
-    chown -R www-data:www-data /var/www/html/ 2>&1 1>/dev/null;
+    chown -R www-data:www-data /var/www/html/;
     /usr/bin/logger 'configure_permissions() finished' -t 'erambaCE-2021-11-12';
 }
 
@@ -478,8 +478,8 @@ __EOF__
 :msg,contains,"iptables:" /var/log/iptables.log
 & stop
 __EOF__
-    sync 2>&1 1>/dev/null;
-    systemctl restart rsyslog.service 2>&1 1>/dev/null;
+    sync;
+    systemctl restart rsyslog.service;
 
     # Configure daily logrotation (forward this log to log mgmt)
     cat << __EOF__  >> /etc/logrotate.d/iptables
@@ -502,10 +502,10 @@ __EOF__
 iptables-restore < /etc/network/iptables.rules
 exit 0
 __EOF__
-    sync 2>&1 1>/dev/null;
+    sync;
     ## make the script executable
-    chmod +x /etc/network/if-up.d/firewallrules 2>&1 1>/dev/null;
-    # Apply firewall rules
+    chmod +x /etc/network/if-up.d/firewallrules;
+    # Apply firewall rules for the first time
     #/etc/network/if-up.d/firewallrules;
     /usr/bin/logger 'configure_iptables() done' -t 'Firewall setup';
 }
@@ -521,8 +521,8 @@ show_databases() {
 run_cron() {
     /usr/bin/logger 'run_cron()' -t 'erambaCE-2021-11-12';
     # Prerun these cron jobs in order to get all greens in Eramba health
-    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data 2>&1 1>/dev/null
-    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data 2>&1 1>/dev/null
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
+    su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
     # Daily will not run successfully until after first login as Admin/Admin and password changed
     #su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
     echo -e "\e[1;32m--------------------------------------------------------------------------------------\e[0m"
@@ -537,8 +537,8 @@ run_cron() {
 create_htpasswd() {
     /usr/bin/logger 'create_htpasswd()' -t 'eramba';
     export HT_PASSWD="$(< /dev/urandom tr -dc A-Za-z0-9 | head -c 32)"
-    mkdir -p /mnt/backup/ 2>&1 1>/dev/null;
-    htpasswd -cb /etc/apache2/.htpasswd eramba $HT_PASSWD 2>&1 1>/dev/null;
+    mkdir -p /mnt/backup/;
+    htpasswd -cb /etc/apache2/.htpasswd eramba $HT_PASSWD;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
     echo "Created password for Apache $HOSTNAME     eramba:$ht_passwd"  >> /mnt/backup/readme-users.txt;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
