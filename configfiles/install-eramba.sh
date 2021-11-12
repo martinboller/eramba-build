@@ -163,9 +163,11 @@ prepare_nix() {
     BUILDDATE=$(date +%Y-%m-%d)
     cat << __EOF__ >> /etc/motd
            
+        $HOSTNAME
+        
 *******************************************
 ***                                     ***
-***    $HOSTNAME                        ***
+***              GRC                    ***
 ***    ------------------------         ***          
 ***      Automated Install              ***
 ***   Eramba Community Edition          ***
