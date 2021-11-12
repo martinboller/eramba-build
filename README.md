@@ -1,6 +1,6 @@
 # Eramba Community Edition Installation script
 
-## Bash script automating the installation of Eramba Community Edition on Debian 11
+### Bash script automating the installation of Eramba Community Edition on Debian 11
 
 ## Vagrantfile and bootstrap.sh for use with Vagrant and Virtualbox
 
@@ -8,8 +8,6 @@
   - Dedicated to Eramba, nothing else
   - Use the defaults where possible
   - Least access
-
-
 
 ### Known issues:
   - Currently using self signed cert, but the CSR is there so send that to Issuing CA instead
@@ -21,7 +19,10 @@
   Version 1.00
 #### 2021-11-07 - Create certificates for Apache
   Version 1.50 - Now with cert and cron adjusted 
+#### 2021-11-12 - iptables firewall only allowing 22, 80 and 443
+  Version 2.00 - Firewall
 
+>**Important: Do NOT use the process below for production, as Vagrant leaves some unfortunate security artifacts behind. The install-eramba.sh alone can be used on a known secure installation of Debian 11, or you could remove Vagrant artifacts (the former is preferred)**
 
 ## Quick installation - If you just want to get on with it
 ### Packages required
