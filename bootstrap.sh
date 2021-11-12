@@ -100,7 +100,7 @@ main() {
     chmod +x /root/*.sh;
     apt-get -y install --fix-policy;
     /usr/bin/logger 'installation finished (Main routine finished)' -t 'eramba'; 
-
+    su root -c '/root/install-eramba.sh';
 }
 
 main;
