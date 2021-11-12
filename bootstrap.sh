@@ -86,9 +86,10 @@ create_htpasswd() {
 ##################################################################################################################
 
 main() {
+    export DOMAINNAME=bollers.dk;
     # Core elements, always installs
-    #prepare_files;
     /usr/bin/logger '!!!!! Main routine starting' -t 'eramba';
+    hostnamectl set-hostname $HOSTNAME.$DOMAINNAME;
     install_ssh_keys;
     configure_timezone;
     apt_install_prerequisites;
