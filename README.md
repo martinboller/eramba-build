@@ -21,3 +21,37 @@
   Version 1.00
 #### 2021-11-07 - Create certificates for Apache
   Version 1.50 - Now with cert and cron adjusted 
+
+
+## Quick installation - If you just want to get on with it
+### Packages required
+All that is needed to spin up test systems is:
+ - VirtualBox https://www.virtualbox.org/
+ - Vagrant https://www.vagrantup.com/downloads
+ 
+### Installation
+#### VirtualBox
+ - Install VirtualBox on your preferred system (MacOS or Linux is preferred) as described on the VirtualBox website
+ - Install the VirtualBox Extensions
+
+Both software titles can be downloaded from https://www.virtualbox.org/
+They can also be added to your package manager, which help with keeping them up-to-date. This can also easily be changed to run with VMWare.
+ 
+#### Vagrant
+ - Install Vagrant on your system as described on the Vagrant website
+
+Vagrant is available at https://www.vagrantup.com/downloads
+ 
+#### Testlab
+Prerequisite: A DHCP server on the network, alternatively change the NIC to use a static or NAT within Vagrantfile.
+ - Create a directory with ample space for Virtual Machines, e.g. /mnt/data/VMs
+ - Configure VirtualBox to use that directory for Virtual Machines by default.
+ - Change directory into /mnt/data/Environments/
+ - Run git clone https://github.com/martinboller/eramba-build.git
+ - Change directory into /mnt/data/Environments/eramba-build/
+ - Execute vagrant up eramba and wait for the OS to install
+
+You may have to select which NIC to use for this e.g. wl08p01
+Logon to the website on the server https://eramba
+ 
+The first install will take longer, as it needs to download the Vagrant box for Debian 11 (which this build is based on) first, however that’ll be reused in subsequent (re)installations.
