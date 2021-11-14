@@ -90,6 +90,7 @@ main() {
     # Core elements, always installs
     /usr/bin/logger '!!!!! Main routine starting' -t 'eramba';
     hostnamectl set-hostname $HOSTNAME.$DOMAINNAME;
+    # Do not forget to add your own public SSH Key(s) instead of dummy in install_ssh_keys()
     install_ssh_keys;
     configure_timezone;
     apt_install_prerequisites;
