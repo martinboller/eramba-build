@@ -109,22 +109,6 @@ install_eramba() {
 generate_certificates() {
     /usr/bin/logger 'generate_certificates()' -t 'erambaCE-2021-11-12';
     mkdir -p /etc/apache2/certs/;
-
-    # organization name
-    # (see also https://www.switch.ch/pki/participants/)
-    export ORGNAME=eramba-community
-    # the fully qualified server (or service) name, change if other servicename than hostname
-    export FQDN=$HOSTNAME;
-    # Local information
-    export ISOCOUNTRY=DK;
-    export PROVINCE=Denmark;
-    export LOCALITY=Aabenraa
-    # subjectAltName entries: to add DNS aliases to the CSR, delete
-    # the '#' character in the ALTNAMES line, and change the subsequent
-    # 'DNS:' entries accordingly. Please note: all DNS names must
-    # resolve to the same IP address as the FQDN.
-    export ALTNAMES=DNS:$HOSTNAME   # , DNS:bar.example.org , DNS:www.foo.example.org
-
     cat << __EOF__ > ./openssl.cnf
 ## Request for $FQDN
 [ req ]
@@ -329,7 +313,7 @@ configure_apache() {
         ServerName $HOSTNAME
         RewriteEngine On
         RewriteCond %{REQUEST_URI} !^/\.well\-known/acme\-challenge/
-        RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}\$1 [R=301,L]
     </VirtualHost>
 
 <VirtualHost *:443>
@@ -421,7 +405,7 @@ configure_iptables() {
 ##
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
-:OUTPUT DROP [0:0]
+:OUTPUT ACCEPT [0:0]
 :LOG_DROPS - [0:0]
 
 ## DROP IP fragments
@@ -441,29 +425,18 @@ configure_iptables() {
 ##
 ## SSH
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
-## DNS
--A OUTPUT -p tcp -m tcp --dport 53 -j ACCEPT
--A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
--A OUTPUT -p tcp -m tcp --dport 853 -j ACCEPT
 ## HTTP(S)
 -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
 -A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
--A OUTPUT -p tcp -m tcp --dport 80 -j ACCEPT
--A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
 ## NTP
 -A INPUT -p udp -m udp --dport 123 -j ACCEPT
--A OUTPUT -p udp -m udp --dport 123 -j ACCEPT
-## DHCP
--A OUTPUT -p udp -m udp --dport 67 -j ACCEPT
 ## ICMP
--A OUTPUT -p icmp -j ACCEPT
 -A INPUT -p icmp -j ACCEPT
 ## Already established sessions
--A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 ## Logging
--A OUTPUT -j LOG_DROPS
+-A INPUT -j LOG_DROPS
 ## get rid of broadcast noise
 -A LOG_DROPS -d 255.255.255.255 -j DROP
 # Drop Broadcast to internal networks
@@ -542,7 +515,7 @@ create_htpasswd() {
     mkdir -p /mnt/backup/;
     htpasswd -cb /etc/apache2/.htpasswd eramba $HT_PASSWD;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
-    echo "Created password for Apache $HOSTNAME     eramba:$ht_passwd"  >> /mnt/backup/readme-users.txt;
+    echo "Created password for Apache $HOSTNAME     eramba:$HT_PASSWD"  >> /mnt/backup/readme-users.txt;
     echo "-------------------------------------------------------------------"  >> /mnt/backup/readme-users.txt;
     /usr/bin/logger 'create_htpasswd() finished' -t 'eramba';
 }
@@ -552,33 +525,59 @@ create_htpasswd() {
 ##################################################################################################################
 
 main() {
-    /usr/bin/logger 'Installing Eramba.......' -t 'eramba';
-     # install all required elements and generate certificates for webserver
-    install_prerequisites;
-    prepare_nix;
-    generate_certificates;
-    install_pdf_tools;
-    install_apache;
-    install_mariadb;
-    install_php;
-    install_eramba;
-    # Configure components
-    prepare_mariadb;
-    configure_mariadb;
-    configure_php;
-    configure_apache;
-    configure_eramba;
-    configure_iptables;
-    create_htpasswd;
-    start_services;
-    configure_permissions;
-    
-    run_cron;
-    show_databases;
-    check_services;
-    /usr/bin/logger 'Eramba Installation complete' -t 'erambaCE-2021-11-12';
-    echo -e;
-    echo -e "\e[1;32mInstallation complete\e[0m";
+    FILE="/ErambaCE_Installed";
+    if ! [ -f $FILE ];
+    then
+        /usr/bin/logger 'Installing Eramba.......' -t 'eramba';
+        ## Variables required for certificate
+        # organization name
+        # (see also https://www.switch.ch/pki/participants/)
+        export ORGNAME=eramba-community
+        # the fully qualified server (or service) name, change if other servicename than hostname
+        export FQDN=$HOSTNAME;
+        # Local information
+        export ISOCOUNTRY=DK;
+        export PROVINCE=Denmark;
+        export LOCALITY=Aabenraa
+        # subjectAltName entries: to add DNS aliases to the CSR, delete
+        # the '#' character in the ALTNAMES line, and change the subsequent
+        # 'DNS:' entries accordingly. Please note: all DNS names must
+        # resolve to the same IP address as the FQDN.
+        export ALTNAMES=DNS:$HOSTNAME   # , DNS:bar.example.org , DNS:www.foo.example.org
+
+        # install all required elements and generate certificates for webserver
+        install_prerequisites;
+        prepare_nix;
+        generate_certificates;
+        install_pdf_tools;
+        install_apache;
+        install_mariadb;
+        install_php;
+        install_eramba;
+        # Configure components
+        prepare_mariadb;
+        configure_mariadb;
+        configure_php;
+        configure_apache;
+        configure_eramba;
+        configure_iptables;
+        create_htpasswd;
+        start_services;
+        configure_permissions;
+        run_cron;
+        show_databases;
+        check_services;
+        /usr/bin/logger 'Eramba Installation complete' -t 'erambaCE-2021-11-12';
+        echo -e;
+        touch /ErambaCE_Installed;
+        echo -e "\e[1;32mEramba Community Edition Installation complete\e[0m";
+    else
+        echo -e "\e[1;31m---------------------------------------------------------------------\e[0m";
+        echo -e "\e[1;31mIt appears that Eramba Community Edition has already been installed\e[0m"
+        echo -e "\e[1;31mIf this is in error, or you just want to install again, then\e[0m"
+        echo -e "\e[1;31mdelete the file /ErambaCE_Installed and run the script again\e[0m"
+        echo -e "\e[1;31m---------------------------------------------------------------------\e[0m";
+    fi
 }
 
 main;
@@ -588,11 +587,10 @@ exit 0;
 ######################################################################################################################################
 # Post install 
 # 
-# Under settings -> crontab change hostname to FQDN in the Eramba web console
 # /var/www/html/eramba_community/app/Console/cake cron test
 # /var/www/html/eramba_community/app/Console/cake system_health check   
 #
-# the hourly, daily, and monthly cron job
+# the hourly, daily, and monthly cron job you'll have to run the daily once manually or wait until it runs by itself 
 # su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job hourly" www-data
 # su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job daily" www-data
 # su -s /bin/bash -c "/var/www/html/eramba_community/app/Console/cake cron job yearly" www-data
