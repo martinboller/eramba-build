@@ -448,6 +448,54 @@ configure_iptables() {
 COMMIT
 __EOF__
 
+# ipv6 rules
+    cat << __EOF__  >> /etc/network/ip6tables.rules
+##
+## Ruleset for spiderfoot Server
+##
+## IP6TABLES Ruleset Author: Martin Boller 2021-11-11 v1
+
+*filter
+## Dropping anything not explicitly allowed
+##
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:LOG_DROPS - [0:0]
+
+## DROP bad TCP/UDP combinations
+-A INPUT -p tcp --dport 0 -j LOG_DROPS
+-A INPUT -p udp --dport 0 -j LOG_DROPS
+-A INPUT -p tcp --tcp-flags ALL NONE -j LOG_DROPS
+-A INPUT -p tcp --tcp-flags ALL ALL -j LOG_DROPS
+
+## Allow everything on loopback
+-A INPUT -i lo -j ACCEPT
+
+## Allow access to port 5001
+-A OUTPUT -p tcp -m tcp --dport 5001 -j ACCEPT
+## SSH, DNS, WHOIS, DHCP ICMP - Add anything else here needed for ntp, monitoring, dhcp, icmp, updates, and ssh
+## SSH
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+## HTTP(S)
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 443 -j ACCEPT
+## NTP
+-A INPUT -p udp -m udp --dport 123 -j ACCEPT
+## ICMP
+-A INPUT -p icmp -j ACCEPT
+## Already established sessions
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+## Logging
+-A INPUT -j LOG_DROPS
+-A LOG_DROPS -p ip -m limit --limit 60/sec -j LOG --log-prefix "iptables:" --log-level 7
+-A LOG_DROPS -j DROP
+
+## Commit everything
+COMMIT
+__EOF__
+
     # Configure separate file for iptables logging
     cat << __EOF__  >> /etc/rsyslog.d/30-iptables-syslog.conf
 :msg,contains,"iptables:" /var/log/iptables.log
@@ -475,6 +523,7 @@ __EOF__
     cat << __EOF__  >> /etc/network/if-up.d/firewallrules
 #! /bin/bash
 iptables-restore < /etc/network/iptables.rules
+ip6tables-restore < /etc/network/ip6tables.rules
 exit 0
 __EOF__
     sync;
